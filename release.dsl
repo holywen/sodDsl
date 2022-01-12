@@ -1,12 +1,15 @@
+def myReleaseName = args.releaseName
+def myProjectName = args.projectName
+def myPipelineName =  'pipeline_' + myReleaseName
 
-release 'sod-dev-release', {
+release myReleaseName, {
   plannedEndDate = '2022-01-25'
   plannedStartDate = '2022-01-11'
-  projectName = 'SoD-Holy'
+  projectName = myProjectName
 
-  pipeline 'pipeline_sod-dev-release', {
-    projectName = 'SoD-Holy'
-    releaseName = 'sod-dev-release'
+  pipeline myPipelineName, {
+    projectName = myProjectName
+    releaseName = myReleaseName
 
     formalParameter 'ec_stagesToRun', {
       expansionDeferred = '1'
@@ -14,17 +17,17 @@ release 'sod-dev-release', {
 
     stage 'Dev', {
       colorCode = '#289ce1'
-      pipelineName = 'pipeline_sod-dev-release'
-      projectName = 'SoD-Holy'
+      pipelineName = myPipelineName
+      projectName = myProjectName
 
       gate 'PRE', {
-        projectName = 'SoD-Holy'
+        projectName = myProjectName
 
         task 'resource-check', {
           gateType = 'PRE'
-          projectName = 'SoD-Holy'
+          projectName = myProjectName
           subprocedure = 'resourceCheck'
-          subproject = 'SoD-Holy'
+          subproject = myProjectName
           taskType = 'PROCEDURE'
         }
 
@@ -32,8 +35,8 @@ release 'sod-dev-release', {
           gateType = 'PRE'
           notificationEnabled = '1'
           notificationTemplate = 'ec_default_gate_task_notification_template'
-          projectName = 'SoD-Holy'
-          subproject = 'SoD-Holy'
+          projectName = myProjectName
+          subproject = myProjectName
           taskType = 'APPROVAL'
           approver = [
             'Everyone',
@@ -42,30 +45,30 @@ release 'sod-dev-release', {
       }
 
       gate 'POST', {
-        projectName = 'SoD-Holy'
+        projectName = myProjectName
       }
 
       task 'Deploy', {
         deployerRunType = 'serial'
-        projectName = 'SoD-Holy'
-        subproject = 'SoD-Holy'
+        projectName = myProjectName
+        subproject = myProjectName
         taskType = 'DEPLOYER'
       }
     }
 
     stage 'QA', {
       colorCode = '#289ce1'
-      pipelineName = 'pipeline_sod-dev-release'
-      projectName = 'SoD-Holy'
+      pipelineName = myPipelineName
+      projectName = myProjectName
 
       gate 'PRE', {
-        projectName = 'SoD-Holy'
+        projectName = myProjectName
 
         task 'resource-check', {
           gateType = 'PRE'
-          projectName = 'SoD-Holy'
+          projectName = myProjectName
           subprocedure = 'resourceCheck'
-          subproject = 'SoD-Holy'
+          subproject = myProjectName
           taskType = 'PROCEDURE'
         }
 
@@ -73,8 +76,8 @@ release 'sod-dev-release', {
           gateType = 'PRE'
           notificationEnabled = '1'
           notificationTemplate = 'ec_default_gate_task_notification_template'
-          projectName = 'SoD-Holy'
-          subproject = 'SoD-Holy'
+          projectName = myProjectName
+          subproject = myProjectName
           taskType = 'APPROVAL'
           approver = [
             'Everyone',
@@ -83,38 +86,38 @@ release 'sod-dev-release', {
       }
 
       gate 'POST', {
-        projectName = 'SoD-Holy'
+        projectName = myProjectName
       }
 
       task 'Deploy', {
         deployerRunType = 'serial'
-        projectName = 'SoD-Holy'
-        subproject = 'SoD-Holy'
+        projectName = myProjectName
+        subproject = myProjectName
         taskType = 'DEPLOYER'
       }
     }
 
     stage 'Prod', {
       colorCode = '#289ce1'
-      pipelineName = 'pipeline_sod-dev-release'
-      projectName = 'SoD-Holy'
+      pipelineName = myPipelineName
+      projectName = myProjectName
 
       gate 'PRE', {
-        projectName = 'SoD-Holy'
+        projectName = myProjectName
 
         task 'launcher-check', {
           gateType = 'PRE'
-          projectName = 'SoD-Holy'
+          projectName = myProjectName
           subprocedure = 'launcherCheck'
-          subproject = 'SoD-Holy'
+          subproject = myProjectName
           taskType = 'PROCEDURE'
         }
 
         task 'resource-check', {
           gateType = 'PRE'
-          projectName = 'SoD-Holy'
+          projectName = myProjectName
           subprocedure = 'resourceCheck'
-          subproject = 'SoD-Holy'
+          subproject = myProjectName
           taskType = 'PROCEDURE'
         }
 
@@ -122,8 +125,8 @@ release 'sod-dev-release', {
           gateType = 'PRE'
           notificationEnabled = '1'
           notificationTemplate = 'ec_default_gate_task_notification_template'
-          projectName = 'SoD-Holy'
-          subproject = 'SoD-Holy'
+          projectName = myProjectName
+          subproject = myProjectName
           taskType = 'APPROVAL'
           approver = [
             'Everyone',
@@ -141,20 +144,20 @@ else {
 }
 ]'''
           gateType = 'PRE'
-          projectName = 'SoD-Holy'
-          subproject = 'SoD-Holy'
+          projectName = myProjectName
+          subproject = myProjectName
           taskType = 'CONDITIONAL'
         }
       }
 
       gate 'POST', {
-        projectName = 'SoD-Holy'
+        projectName = myProjectName
       }
 
       task 'Deploy', {
         deployerRunType = 'serial'
-        projectName = 'SoD-Holy'
-        subproject = 'SoD-Holy'
+        projectName = myProjectName
+        subproject = myProjectName
         taskType = 'DEPLOYER'
       }
     }
@@ -168,21 +171,21 @@ else {
     deployerConfiguration '3830323d-7360-11ec-95cd-02426ce5a855', {
       deployerTaskName = 'Deploy'
       environmentName = 'SoDApp-Dev'
-      projectName = 'SoD-Holy'
+      projectName = myProjectName
       stageName = 'Dev'
     }
 
     deployerConfiguration 'a50670db-7360-11ec-9ad4-02426ce5a855', {
       deployerTaskName = 'Deploy'
       environmentName = 'SoDApp-QA'
-      projectName = 'SoD-Holy'
+      projectName = myProjectName
       stageName = 'QA'
     }
 
     deployerConfiguration 'a5145330-7360-11ec-b968-02426ce5a855', {
       deployerTaskName = 'Deploy'
       environmentName = 'SoDApp-Prod'
-      projectName = 'SoD-Holy'
+      projectName = myProjectName
       stageName = 'Prod'
     }
   }
