@@ -1,6 +1,8 @@
 def myReleaseName = args.releaseName
 def myProjectName = args.projectName
 def myPipelineName =  'pipeline_' + myReleaseName
+def myApplicationName = args.deployApplicationName
+def myStages = args.stages
 
 release myReleaseName, {
   plannedEndDate = '2022-01-25'
@@ -15,178 +17,89 @@ release myReleaseName, {
       expansionDeferred = '1'
     }
 
-    stage 'Dev', {
-      colorCode = '#289ce1'
-      pipelineName = myPipelineName
-      projectName = myProjectName
-
-      gate 'PRE', {
-        projectName = myProjectName
-
-        task 'resource-check', {
-          gateType = 'PRE'
+    myStages.each { stageItem ->
+        stage stageItem.stageName, {
+          colorCode = stageItem.colorCode
+          pipelineName = myPipelineName
           projectName = myProjectName
-          subprocedure = 'resourceCheck'
-          subproject = myProjectName
-          taskType = 'PROCEDURE'
+
+          gate 'PRE', {
+            projectName = myProjectName
+
+            if(stageItem.isProduction == 'true'){
+              task 'launcher-check', {
+                gateType = 'PRE'
+                projectName = myProjectName
+                subprocedure = 'launcherCheck'
+                subproject = myProjectName
+                taskType = 'PROCEDURE'
+              }
+            }
+            task 'resource-check', {
+              gateType = 'PRE'
+              projectName = myProjectName
+              subprocedure = 'resourceCheck'
+              subproject = myProjectName
+              taskType = 'PROCEDURE'
+            }
+            if(stageItem.isProduction == 'true'){
+              task 'deployment to production', {
+                gateType = 'PRE'
+                notificationEnabled = '1'
+                notificationTemplate = 'ec_default_gate_task_notification_template'
+                projectName = myProjectName
+                subproject = myProjectName
+                taskType = 'APPROVAL'
+                approver = stageItem.approverGroups
+              }
+
+              task 'approverCheck', {
+                gateCondition = '''$[/javascript 
+                  if( myGateRuntime.tasks[\'deployment to production\'].lastModifiedBy != myPipelineRuntime.launchedByUser) {
+                    true;
+                  }
+                  else {
+                    setProperty("/myTaskRuntime/evidence", "Approver and Initiator can not be the same")
+                    false;
+                  }
+                  ]'''.stripIndent()
+                gateType = 'PRE'
+                projectName = myProjectName
+                subproject = myProjectName
+                taskType = 'CONDITIONAL'
+              }
+            }
+          }
+
+          task 'Deploy', {
+            deployerRunType = 'serial'
+            projectName = myProjectName
+            subproject = myProjectName
+            taskType = 'DEPLOYER'
+          }
         }
 
-        task 'approval', {
-          gateType = 'PRE'
-          notificationEnabled = '1'
-          notificationTemplate = 'ec_default_gate_task_notification_template'
-          projectName = myProjectName
-          subproject = myProjectName
-          taskType = 'APPROVAL'
-          approver = [
-            'Everyone',
-          ]
-        }
-      }
-
-      gate 'POST', {
-        projectName = myProjectName
-      }
-
-      task 'Deploy', {
-        deployerRunType = 'serial'
-        projectName = myProjectName
-        subproject = myProjectName
-        taskType = 'DEPLOYER'
-      }
-    }
-
-    stage 'QA', {
-      colorCode = '#289ce1'
-      pipelineName = myPipelineName
-      projectName = myProjectName
-
-      gate 'PRE', {
-        projectName = myProjectName
-
-        task 'resource-check', {
-          gateType = 'PRE'
-          projectName = myProjectName
-          subprocedure = 'resourceCheck'
-          subproject = myProjectName
-          taskType = 'PROCEDURE'
-        }
-
-        task 'approval', {
-          gateType = 'PRE'
-          notificationEnabled = '1'
-          notificationTemplate = 'ec_default_gate_task_notification_template'
-          projectName = myProjectName
-          subproject = myProjectName
-          taskType = 'APPROVAL'
-          approver = [
-            'Everyone',
-          ]
-        }
-      }
-
-      gate 'POST', {
-        projectName = myProjectName
-      }
-
-      task 'Deploy', {
-        deployerRunType = 'serial'
-        projectName = myProjectName
-        subproject = myProjectName
-        taskType = 'DEPLOYER'
-      }
-    }
-
-    stage 'Prod', {
-      colorCode = '#289ce1'
-      pipelineName = myPipelineName
-      projectName = myProjectName
-
-      gate 'PRE', {
-        projectName = myProjectName
-
-        task 'launcher-check', {
-          gateType = 'PRE'
-          projectName = myProjectName
-          subprocedure = 'launcherCheck'
-          subproject = myProjectName
-          taskType = 'PROCEDURE'
-        }
-
-        task 'resource-check', {
-          gateType = 'PRE'
-          projectName = myProjectName
-          subprocedure = 'resourceCheck'
-          subproject = myProjectName
-          taskType = 'PROCEDURE'
-        }
-
-        task 'deployment to production', {
-          gateType = 'PRE'
-          notificationEnabled = '1'
-          notificationTemplate = 'ec_default_gate_task_notification_template'
-          projectName = myProjectName
-          subproject = myProjectName
-          taskType = 'APPROVAL'
-          approver = [
-            'Everyone',
-          ]
-        }
-
-        task 'approverCheck', {
-          gateCondition = '''$[/javascript 
- if( myGateRuntime.tasks[\'deployment to production\'].lastModifiedBy != myPipelineRuntime.launchedByUser) {
-   true;
-}
-else {
-  setProperty("/myTaskRuntime/evidence", "Approver and Initiator can not be the same")
-  false;
-}
-]'''
-          gateType = 'PRE'
-          projectName = myProjectName
-          subproject = myProjectName
-          taskType = 'CONDITIONAL'
-        }
-      }
-
-      gate 'POST', {
-        projectName = myProjectName
-      }
-
-      task 'Deploy', {
-        deployerRunType = 'serial'
-        projectName = myProjectName
-        subproject = myProjectName
-        taskType = 'DEPLOYER'
-      }
     }
   }
 
-  deployerApplication 'SoDApp', {
-    orderIndex = '1'
-    processName = 'Deploy'
-    smartDeploy = '0'
+}
 
-    deployerConfiguration '3830323d-7360-11ec-95cd-02426ce5a855', {
-      deployerTaskName = 'Deploy'
-      environmentName = 'SoDApp-Dev'
-      projectName = myProjectName
-      stageName = 'Dev'
-    }
+transaction {
+  release myReleaseName, {
+    projectName = myProjectName
+    deployerApplication myApplicationName, {
+      orderIndex = '1'
+      processName = 'Deploy'
+      smartDeploy = '0'
 
-    deployerConfiguration 'a50670db-7360-11ec-9ad4-02426ce5a855', {
-      deployerTaskName = 'Deploy'
-      environmentName = 'SoDApp-QA'
-      projectName = myProjectName
-      stageName = 'QA'
-    }
-
-    deployerConfiguration 'a5145330-7360-11ec-b968-02426ce5a855', {
-      deployerTaskName = 'Deploy'
-      environmentName = 'SoDApp-Prod'
-      projectName = myProjectName
-      stageName = 'Prod'
+      myStages.each { stageItem ->
+        deployerConfiguration "deployerconfig-" + stageItem.stageName + "-" + stageItem.environmentName, {
+          deployerTaskName = 'Deploy'
+          environmentName = stageItem.environmentName
+          projectName = myProjectName
+          stageName = stageItem.stageName
+        }
+      }
     }
   }
 }
