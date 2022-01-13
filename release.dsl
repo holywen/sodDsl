@@ -35,6 +35,7 @@ release myReleaseName, {
                 taskType = 'PROCEDURE'
               }
             }
+
             task 'resource-check', {
               gateType = 'PRE'
               projectName = myProjectName
@@ -42,6 +43,7 @@ release myReleaseName, {
               subproject = myProjectName
               taskType = 'PROCEDURE'
             }
+
             if(stageItem.isProduction == 'true'){
               task 'deployment to production', {
                 gateType = 'PRE'
@@ -55,7 +57,7 @@ release myReleaseName, {
 
               task 'approverCheck', {
                 gateCondition = '''
-                $[/javascript 
+                $[/javascript
                   if( myGateRuntime.tasks[\'deployment to production\'].lastModifiedBy != myPipelineRuntime.launchedByUser) {
                     true;
                   }
