@@ -54,7 +54,8 @@ release myReleaseName, {
               }
 
               task 'approverCheck', {
-                gateCondition = '''$[/javascript 
+                gateCondition = '''
+                $[/javascript 
                   if( myGateRuntime.tasks[\'deployment to production\'].lastModifiedBy != myPipelineRuntime.launchedByUser) {
                     true;
                   }
@@ -62,7 +63,7 @@ release myReleaseName, {
                     setProperty("/myTaskRuntime/evidence", "Approver and Initiator can not be the same")
                     false;
                   }
-                  ]'''.stripIndent()
+                ]'''.stripIndent()
                 gateType = 'PRE'
                 projectName = myProjectName
                 subproject = myProjectName
