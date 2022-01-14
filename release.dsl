@@ -27,19 +27,28 @@ release myReleaseName, {
             projectName = myProjectName
 
             if(stageItem.isProduction == 'true'){
-              task 'launcher-check', {
+              task 'serviceAccountCheck', {
                 gateType = 'PRE'
                 projectName = myProjectName
-                subprocedure = 'launcherCheck'
+                subprocedure = 'serviceAccountCheck'
+                actualParameter = [
+                  'repoName': 'Macquarie Generic',
+                  'userName': '$[/myPipelineRuntime/launchedByUser]',
+                ]
                 subproject = myProjectName
                 taskType = 'PROCEDURE'
               }
             }
 
-            task 'resource-check', {
+            task 'resourceCheck', {
               gateType = 'PRE'
               projectName = myProjectName
               subprocedure = 'resourceCheck'
+              actualParameter = [
+                'environmentName': stageItem.environmentName,
+                'isProduction': stageItem.isProduction,
+                'projectName': myProjectName,
+              ]
               subproject = myProjectName
               taskType = 'PROCEDURE'
             }
