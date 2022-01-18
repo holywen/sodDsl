@@ -70,7 +70,7 @@ release myReleaseName, {
                 subprocedure = 'serviceAccountCheck'
                 actualParameter = [
                   'repoName': 'Macquarie Generic',
-                  'userName': '$[myGateRuntime/tasks[\'deployment to production\']/lastModifiedBy]',
+                  'userName': '$[/myGateRuntime/tasks[\'deployment to production\']/lastModifiedBy]',
                 ]
                 subproject = myProjectName
                 taskType = 'PROCEDURE'
