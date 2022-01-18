@@ -64,6 +64,18 @@ release myReleaseName, {
                 approver = stageItem.approverGroups
               }
 
+              task 'serviceAccountCheckForApprover', {
+                gateType = 'PRE'
+                projectName = myProjectName
+                subprocedure = 'serviceAccountCheck'
+                actualParameter = [
+                  'repoName': 'Macquarie Generic',
+                  'userName': '$[myGateRuntime/tasks[\'deployment to production\']/lastModifiedBy]',
+                ]
+                subproject = myProjectName
+                taskType = 'PROCEDURE'
+              }
+
               task 'approverCheck', {
                 gateCondition = '''
                 $[/javascript
