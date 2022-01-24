@@ -29,28 +29,26 @@ release myReleaseName, {
             if(stageItem.isProduction == 'true'){
               task 'serviceAccountCheck', {
                 gateType = 'PRE'
-                projectName = myProjectName
-                subprocedure = 'serviceAccountCheck'
                 actualParameter = [
                   'repoName': 'Macquarie Generic',
                   'userName': '$[/myPipelineRuntime/launchedByUser]',
                 ]
-                subproject = myProjectName
-                taskType = 'PROCEDURE'
+                subpluginKey = 'MBL-Utils'
+                subprocedure = 'Service Account Check'
+                taskType = 'PLUGIN'
               }
             }
 
             task 'resourceCheck', {
               gateType = 'PRE'
-              projectName = myProjectName
-              subprocedure = 'resourceCheck'
               actualParameter = [
                 'environmentName': stageItem.environmentName,
                 'isProduction': stageItem.isProduction,
                 'projectName': myProjectName,
               ]
-              subproject = myProjectName
-              taskType = 'PROCEDURE'
+              subpluginKey = 'MBL-Utils'
+              subprocedure = 'Resource Type Check'
+              taskType = 'PLUGIN'
             }
 
             if(stageItem.isProduction == 'true'){
@@ -66,14 +64,13 @@ release myReleaseName, {
 
               task 'serviceAccountCheckForApprover', {
                 gateType = 'PRE'
-                projectName = myProjectName
-                subprocedure = 'serviceAccountCheck'
                 actualParameter = [
                   'repoName': 'Macquarie Generic',
                   'userName': '$[/myGateRuntime/tasks[\'deployment to production\']/lastModifiedBy]',
                 ]
-                subproject = myProjectName
-                taskType = 'PROCEDURE'
+                subpluginKey = 'MBL-Utils'
+                subprocedure = 'Service Account Check'
+                taskType = 'PLUGIN'
               }
 
               task 'approverCheck', {
