@@ -2,6 +2,11 @@ def myReleaseName = args.releaseName
 def myProjectName = args.projectName
 def myPipelineName =  'pipeline_' + myReleaseName
 def myApplicationName = args.deployApplicationName
+def teamAdminGroupName = args.teamAdminGroupName
+def developersGroupName = args.developersGroupName
+def operationsGroupName = args.operationsGroupName
+def approversGroupNames = args.approversGroupNames
+
 def myStages = args.stages
 
 release myReleaseName, {
@@ -15,6 +20,31 @@ release myReleaseName, {
 
     formalParameter 'ec_stagesToRun', {
       expansionDeferred = '1'
+    }
+
+    acl {
+      inheriting = '1'
+
+      aclEntry 'group', principalName: teamAdminGroupName, {
+        changePermissionsPrivilege = 'inherit'
+        executePrivilege = 'allow'
+        modifyPrivilege = 'inherit'
+        readPrivilege = 'inherit'
+      }
+
+      aclEntry 'group', principalName: developersGroupName, {
+        changePermissionsPrivilege = 'inherit'
+        executePrivilege = 'allow'
+        modifyPrivilege = 'inherit'
+        readPrivilege = 'inherit'
+      }
+
+      aclEntry 'group', principalName: operationsGroupName, {
+        changePermissionsPrivilege = 'inherit'
+        executePrivilege = 'allow'
+        modifyPrivilege = 'inherit'
+        readPrivilege = 'inherit'
+      }
     }
 
     myStages.each { stageItem ->
@@ -59,7 +89,7 @@ release myReleaseName, {
                 projectName = myProjectName
                 subproject = myProjectName
                 taskType = 'APPROVAL'
-                approver = stageItem.approverGroups
+                approver = approversGroupNames
               }
 
               task 'serviceAccountCheckForApprover', {
@@ -97,6 +127,19 @@ release myReleaseName, {
             projectName = myProjectName
             subproject = myProjectName
             taskType = 'DEPLOYER'
+          }
+
+          if(stageItem.isProduction == 'true'){
+            acl {
+              inheriting = '1'
+
+              aclEntry 'group', principalName: developersGroupName, {
+                changePermissionsPrivilege = 'inherit'
+                executePrivilege = 'inherit'
+                modifyPrivilege = 'inherit'
+                readPrivilege = 'deny'
+              }
+            }
           }
         }
 
