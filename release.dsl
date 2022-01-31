@@ -10,9 +10,34 @@ def approversGroupNames = args.approversGroupNames
 def myStages = args.stages
 
 release myReleaseName, {
-  plannedEndDate = '2022-01-25'
+  plannedEndDate = '2022-12-25'
   plannedStartDate = '2022-01-11'
   projectName = myProjectName
+
+  acl {
+    inheriting = '1'
+
+    aclEntry 'group', principalName: teamAdminGroupName, {
+      changePermissionsPrivilege = 'inherit'
+      executePrivilege = 'allow'
+      modifyPrivilege = 'deny'
+      readPrivilege = 'inherit'
+    }
+
+    aclEntry 'group', principalName: developersGroupName, {
+      changePermissionsPrivilege = 'inherit'
+      executePrivilege = 'allow'
+      modifyPrivilege = 'deny'
+      readPrivilege = 'inherit'
+    }
+
+    aclEntry 'group', principalName: operationsGroupName, {
+      changePermissionsPrivilege = 'inherit'
+      executePrivilege = 'allow'
+      modifyPrivilege = 'inherit'
+      readPrivilege = 'inherit'
+    }
+  }
 
   pipeline myPipelineName, {
     projectName = myProjectName
@@ -20,31 +45,6 @@ release myReleaseName, {
 
     formalParameter 'ec_stagesToRun', {
       expansionDeferred = '1'
-    }
-
-    acl {
-      inheriting = '1'
-
-      aclEntry 'group', principalName: teamAdminGroupName, {
-        changePermissionsPrivilege = 'inherit'
-        executePrivilege = 'allow'
-        modifyPrivilege = 'inherit'
-        readPrivilege = 'inherit'
-      }
-
-      aclEntry 'group', principalName: developersGroupName, {
-        changePermissionsPrivilege = 'inherit'
-        executePrivilege = 'allow'
-        modifyPrivilege = 'inherit'
-        readPrivilege = 'inherit'
-      }
-
-      aclEntry 'group', principalName: operationsGroupName, {
-        changePermissionsPrivilege = 'inherit'
-        executePrivilege = 'allow'
-        modifyPrivilege = 'inherit'
-        readPrivilege = 'inherit'
-      }
     }
 
     myStages.each { stageItem ->
@@ -63,7 +63,7 @@ release myReleaseName, {
                   'repoName': 'Macquarie Generic',
                   'userName': '$[/myPipelineRuntime/launchedByUser]',
                 ]
-                subpluginKey = 'MBL-Utils'
+                subpluginKey = 'MGL-Utils'
                 subprocedure = 'Service Account Check'
                 taskType = 'PLUGIN'
               }
@@ -76,7 +76,7 @@ release myReleaseName, {
                 'isProduction': stageItem.isProduction,
                 'projectName': myProjectName,
               ]
-              subpluginKey = 'MBL-Utils'
+              subpluginKey = 'MGL-Utils'
               subprocedure = 'Resource Type Check'
               taskType = 'PLUGIN'
             }
@@ -98,7 +98,7 @@ release myReleaseName, {
                   'repoName': 'Macquarie Generic',
                   'userName': '$[/myGateRuntime/tasks[\'deployment to production\']/lastModifiedBy]',
                 ]
-                subpluginKey = 'MBL-Utils'
+                subpluginKey = 'MGL-Utils'
                 subprocedure = 'Service Account Check'
                 taskType = 'PLUGIN'
               }
