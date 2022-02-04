@@ -153,6 +153,7 @@ transaction {
     projectName = myProjectName
     deployerApplication myApplicationName, {
       orderIndex = '1'
+      processName = myStages.first().deployProcessName
       smartDeploy = '0'
 
       myStages.each { stageItem ->
