@@ -10,8 +10,8 @@ def approversGroupNames = args.approversGroupNames
 def myStages = args.stages
 
 release myReleaseName, {
-  plannedEndDate = '2022-12-25'
-  plannedStartDate = '2022-01-11'
+  plannedEndDate = args.releasePlannedEndDate
+  plannedStartDate = args.releasePlannedStartDate
   projectName = myProjectName
 
   acl {
