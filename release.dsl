@@ -162,6 +162,7 @@ transaction {
           environmentName = stageItem.environmentName
           projectName = myProjectName
           stageName = stageItem.stageName
+          processName = stageItem.deployProcessName
         }
       }
     }
