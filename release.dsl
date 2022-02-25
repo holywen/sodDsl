@@ -211,6 +211,38 @@ release myReleaseName, {
         }
 
     }
+
+    property 'ec_counters', {
+
+      // Custom properties
+      acl {
+        inheriting = '1' //inherit from the parent project
+
+        //team admin access, allow execute and modify
+        aclEntry 'group', principalName: teamAdminGroupName, {
+          changePermissionsPrivilege = 'inherit'
+          executePrivilege = 'allow'
+          modifyPrivilege = 'allow'
+          readPrivilege = 'inherit'
+        }
+
+        //developer access, allow execute and modify
+        aclEntry 'group', principalName: developersGroupName, {
+          changePermissionsPrivilege = 'inherit'
+          executePrivilege = 'allow'
+          modifyPrivilege = 'allow'
+          readPrivilege = 'inherit'
+        }
+
+        //operations access, allow execute and modify
+        aclEntry 'group', principalName: operationsGroupName, {
+          changePermissionsPrivilege = 'inherit'
+          executePrivilege = 'allow'
+          modifyPrivilege = 'allow'
+          readPrivilege = 'inherit'
+        }
+      }
+    }
   }
 
 }
