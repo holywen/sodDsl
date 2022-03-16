@@ -43,6 +43,8 @@ example json file as below:
           "deployApplicationName": "SoDApp",
           "deployProcessName": "Deploy",  #the application deploy process name to do the deployment
           "environmentName": "SoDApp-Dev", #target environment to deploy the application to.
+          "smartDeploy":"1",               #smart deploy, 1 to enable, 0 to disable, only the first stage applicationDeployConfigs definition will be used.
+          "stageArtifacts":"1",            #stage Artifacts, 1 to enable, 0 to disable, only the first stage applicationDeployConfigs definition will be used.
           "parameters":[         #the parameters to the deploy process
             {"name":"version", "value":"$[App1Version]"},   #parameter name is version, and the value is $[App1Version] from the pipeline parameter
             {"name":"parameter2", "value":"value2"}
@@ -52,6 +54,8 @@ example json file as below:
           "deployApplicationName": "SoDApp1",
           "deployProcessName": "Deploy",
           "environmentName": "SoDApp-Dev",
+          "smartDeploy":"1",
+          "stageArtifacts":"1",
           "parameters":[
             {"name":"version", "value":"$[App2Version]"},
             {"name":"parameter2", "value":"value2"}
@@ -159,6 +163,7 @@ release myReleaseName, {
   releaseTags.each{ tagItem ->
     tag tagItem
   }
+
   //setting up release level acl
   acl {
     inheriting = '1' //inherit from the parent project
@@ -365,8 +370,10 @@ transaction {
     projectName = myProjectName
     deployApplicationNames.each { applicationName ->
       deployerApplication applicationName, {
-        processName = myStages.first().applicationDeployConfigs.find { it.deployApplicationName == applicationName }.deployProcessName
-        smartDeploy = '0'
+        def myFirstAppDeployConfig = myStages.first().applicationDeployConfigs.find { it.deployApplicationName == applicationName }
+        processName = myFirstAppDeployConfig.deployProcessName
+        smartDeploy = myFirstAppDeployConfig.smartDeploy ?: "0"
+        stageArtifacts = myFirstAppDeployConfig.stageArtifacts ?: "0"
 
         myStages.each { stageItem ->
           def applicationDeployConfig = stageItem.applicationDeployConfigs.find { it.deployApplicationName == applicationName }
