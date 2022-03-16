@@ -30,6 +30,8 @@ example json file as below:
     {"name":"parameter3", "label": "optional parameter", "defaultValue":"value3", "required":"0"}
   ],
 
+  "tags":["tag1", "tag2", "tag3"],  #tags for the release
+
   #stages definition, in the [] we can define as many stages as we want
   "stages" : [
     {
@@ -134,6 +136,7 @@ def operationsGroupName = args.operationsGroupName
 def approversGroupNames = args.approversGroupNames
 def releaseProperties = args.releaseProperties
 def pipelineParameters = args.pipelineParameters
+def releaseTags = args.tags
 
 def myStages = args.stages
 def deployApplicationNames = myStages.first().applicationDeployConfigs.collect { it.deployApplicationName }
@@ -152,6 +155,10 @@ release myReleaseName, {
     property propertyItem.name, value: propertyItem.value
   }
 
+  //set tags
+  releaseTags.each{ tagItem ->
+    tag tagItem
+  }
   //setting up release level acl
   acl {
     inheriting = '1' //inherit from the parent project
