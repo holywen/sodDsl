@@ -76,6 +76,7 @@ example json file as below:
           "deployApplicationName": "SoDApp",
           "deployProcessName": "Deploy",
           "environmentName": "SoDApp-QA",
+          "snapshotName":"$[App1Version]", #use snapshot name here if you want to deploy a snapshot instead.
           "parameters":[
             {"name":"version", "value":"$[App1Version]"},
             {"name":"parameter2", "value":"value2"}
@@ -85,6 +86,7 @@ example json file as below:
           "deployApplicationName": "SoDApp1",
           "deployProcessName": "Deploy",
           "environmentName": "SoDApp-QA",
+          "snapshotName":"$[App2Version]",
           "parameters":[
             {"name":"version", "value":"$[App2Version]"},
             {"name":"parameter2", "value":"value2"}
@@ -384,6 +386,8 @@ transaction {
             projectName = myProjectName
             stageName = stageItem.stageName
             processName = applicationDeployConfig.deployProcessName
+            snapshotName = applicationDeployConfig.snapshotName
+
             applicationDeployConfig.parameters.each{ parameterItem ->
               actualParameter parameterItem.name, parameterItem.value
             }
