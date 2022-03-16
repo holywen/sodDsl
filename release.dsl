@@ -7,7 +7,6 @@ example json file as below:
 {
   "projectName": "SoD-Holy",
   "releaseName": "sod-dev-release",
-  "deployApplicationName": "SoDApp",    # the application name you need to deploy in each stage
   "teamAdminGroupName":"SoD-Holy-admin-group", # the team admin group name here, acls will be setup in the release/pipeline stages
   "developersGroupName":"SoD-Holy-developers-group", # the developers group name here, acls will be setup in the release/pipeline stages
   "operationsGroupName":"SoD-Holy-operations-group", # the operations group name here, acls will be setup in the release/pipeline stages
@@ -15,28 +14,110 @@ example json file as below:
   "releasePlannedStartDate":"2021-12-25", #the planned release start date with format YYYY-MM-DD
   "releasePlannedEndDate":"2022-12-25", #the planned release end date with format YYYY-MM-DD
 
+  "releaseProperties":[    #properties definition at release, can be reference using $[/myRelease/property1]
+    {"name":"property1", "value": "value1"},
+    {"name":"property2", "value": "value2"}
+  ],
+
+  "pipelineParameters":[ #parameters definition for the release pipeline
+    {
+      "name":"App1Version",  #Name of the parameter
+      "label": "App1 Version", #Label of the parameter
+      "defaultValue":"1.0", #Default value of the parameter
+      "required":"1" #is a Mandatory parameter or not.
+    },
+    {"name":"App2Version", "label": "App2 Version", "defaultValue":"1.2", "required":"1"},
+    {"name":"parameter3", "label": "optional parameter", "defaultValue":"value3", "required":"0"}
+  ],
+
   #stages definition, in the [] we can define as many stages as we want
   "stages" : [
     {
       "stageName": "Dev",  #name of the stage
       "colorCode": "red", #color of the stage, can use color code as well
       "isProduction": "false",  #is this a production stage, means do we need to deploy to a production environment, differnet controls/approver checks will be applied
-      "deployProcessName": "Deploy", #the application deploy process name to do the deployment
-      "environmentName": "SoDApp-Dev" #target environment to deploy the application to.
+      "applicationDeployConfigs": [ # multiple application deploy configs
+        {
+          "deployApplicationName": "SoDApp",
+          "deployProcessName": "Deploy",  #the application deploy process name to do the deployment
+          "environmentName": "SoDApp-Dev", #target environment to deploy the application to.
+          "parameters":[         #the parameters to the deploy process
+            {"name":"version", "value":"$[App1Version]"},   #parameter name is version, and the value is $[App1Version] from the pipeline parameter
+            {"name":"parameter2", "value":"value2"}
+          ]
+        },
+        {
+          "deployApplicationName": "SoDApp1",
+          "deployProcessName": "Deploy",
+          "environmentName": "SoDApp-Dev",
+          "parameters":[
+            {"name":"version", "value":"$[App2Version]"},
+            {"name":"parameter2", "value":"value2"}
+          ]
+        }
+      ],
+      "properties":[           #properties defined for stage
+        {"name":"property1", "value": "value1"},
+        {"name":"property2", "value": "value2"}
+      ]
     },
     {
       "stageName": "QA",
       "colorCode": "yellow",
       "isProduction": "false",
-      "deployProcessName": "Deploy",
-      "environmentName": "SoDApp-QA"
+      "applicationDeployConfigs": [
+        {
+          "deployApplicationName": "SoDApp",
+          "deployProcessName": "Deploy",
+          "environmentName": "SoDApp-QA",
+          "parameters":[
+            {"name":"version", "value":"$[App1Version]"},
+            {"name":"parameter2", "value":"value2"}
+          ]
+        },
+        {
+          "deployApplicationName": "SoDApp1",
+          "deployProcessName": "Deploy",
+          "environmentName": "SoDApp-QA",
+          "parameters":[
+            {"name":"version", "value":"$[App2Version]"},
+            {"name":"parameter2", "value":"value2"}
+          ]
+        }
+      ],
+      "properties":[
+        {"name":"property1", "value": "value1"},
+        {"name":"property2", "value": "value2"}
+      ]
     },
     {
       "stageName": "Prod",
       "colorCode": "green",
       "isProduction": "true",
-      "deployProcessName": "Deploy",
-      "environmentName": "SoDApp-Prod"
+      "applicationDeployConfigs": [
+        {
+          "deployApplicationName": "SoDApp",
+          "deployProcessName": "Deploy",
+          "environmentName": "SoDApp-Prod",
+          "parameters":[
+            {"name":"version", "value":"$[App1Version]"},
+            {"name":"parameter2", "value":"value2"}
+          ]
+        },
+        {
+          "deployApplicationName": "SoDApp1",
+          "deployProcessName": "Deploy",
+          "environmentName": "SoDApp-Prod",
+          "parameters":[
+            {"name":"version", "value":"$[App2Version]"},
+            {"name":"parameter2", "value":"value2"}
+          ]
+        }
+      ],
+      "properties":[
+        {"name":"property1", "value": "value1"},
+        {"name":"property2", "value": "value2"}
+      ]
     }
   ]
 }
@@ -47,14 +128,17 @@ example json file as below:
 def myReleaseName = args.releaseName
 def myProjectName = args.projectName
 def myPipelineName =  'pipeline_' + myReleaseName
-def myApplicationName = args.deployApplicationName
 def teamAdminGroupName = args.teamAdminGroupName
 def developersGroupName = args.developersGroupName
 def operationsGroupName = args.operationsGroupName
 def approversGroupNames = args.approversGroupNames
+def releaseProperties = args.releaseProperties
+def pipelineParameters = args.pipelineParameters
 
 def myStages = args.stages
+def deployApplicationNames = myStages.first().applicationDeployConfigs.collect { it.deployApplicationName }
 
+println "deployApplicationNames:" + deployApplicationNames
 
 //creating release
 release myReleaseName, {
@@ -62,6 +146,11 @@ release myReleaseName, {
   plannedEndDate = args.releasePlannedEndDate
   plannedStartDate = args.releasePlannedStartDate
   projectName = myProjectName
+
+  //set properties
+  releaseProperties.each{ propertyItem ->
+    property propertyItem.name, value: propertyItem.value
+  }
 
   //setting up release level acl
   acl {
@@ -97,6 +186,16 @@ release myReleaseName, {
     projectName = myProjectName
     releaseName = myReleaseName
 
+    //define pipeline parameters
+    pipelineParameters.each{ parameterItem ->
+      formalParameter parameterItem.name, defaultValue: parameterItem.defaultValue, {
+        expansionDeferred = '0'
+        label = parameterItem.label
+        required = parameterItem.required
+        type = 'entry'
+      }
+    }
+
     formalParameter 'ec_stagesToRun', {
       expansionDeferred = '1'
     }
@@ -131,8 +230,8 @@ release myReleaseName, {
               task 'resourceCheck', {
                 gateType = 'PRE'
                 actualParameter = [
-                  'config': '/projects/Developer Tools/pluginConfigurations/CMDB Integration',
-                  'environmentName': stageItem.environmentName,
+                  'config': '/projects/sodBootstrapPipeline/pluginConfigurations/CMDB Integration',
+                  'environmentName': stageItem.applicationDeployConfigs.environmentName.unique().join(','),
                   'isProduction': stageItem.isProduction,
                   'projectName': myProjectName,
                 ]
@@ -208,6 +307,10 @@ release myReleaseName, {
               }
             }
           }
+
+          stageItem.properties.each{ propertyItem ->
+            property propertyItem.name, value: propertyItem.value
+          }
         }
 
     }
@@ -247,22 +350,30 @@ release myReleaseName, {
 
 }
 
+
+
 //update the deployerconfiguration for the release
 transaction {
   release myReleaseName, {
     projectName = myProjectName
-    deployerApplication myApplicationName, {
-      orderIndex = '1'
-      processName = myStages.first().deployProcessName
-      smartDeploy = '0'
+    deployApplicationNames.each { applicationName ->
+      deployerApplication applicationName, {
+        processName = myStages.first().applicationDeployConfigs.find { it.deployApplicationName == applicationName }.deployProcessName
+        smartDeploy = '0'
 
-      myStages.each { stageItem ->
-        deployerConfiguration "deployerconfig-" + stageItem.stageName + "-" + stageItem.environmentName, {
-          deployerTaskName = 'Deploy'
-          environmentName = stageItem.environmentName
-          projectName = myProjectName
-          stageName = stageItem.stageName
-          processName = stageItem.deployProcessName
+        myStages.each { stageItem ->
+          def applicationDeployConfig = stageItem.applicationDeployConfigs.find { it.deployApplicationName == applicationName }
+
+          deployerConfiguration "deployerconfig-" + applicationName + "-" + stageItem.stageName + "-" + applicationDeployConfig.environmentName, {
+            deployerTaskName = 'Deploy'
+            environmentName = applicationDeployConfig.environmentName
+            projectName = myProjectName
+            stageName = stageItem.stageName
+            processName = applicationDeployConfig.deployProcessName
+            applicationDeployConfig.parameters.each{ parameterItem ->
+              actualParameter parameterItem.name, parameterItem.value
+            }
+          }
         }
       }
     }
