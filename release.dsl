@@ -62,6 +62,12 @@ example json file as below:
           ]
         }
       ],
+      "tasks":[
+        {
+          "taskType":"deployer",
+          "deployerRunType": "serial"   # should the deployer run deploy tasks in serial or parallel mode if there are multiple applications defined
+        }
+      ],
       "properties":[           #properties defined for stage
         {"name":"property1", "value": "value1"},
         {"name":"property2", "value": "value2"}
@@ -93,6 +99,12 @@ example json file as below:
           ]
         }
       ],
+      "tasks":[
+        {
+          "taskType":"deployer",
+          "deployerRunType": "serial"
+        }
+      ],
       "properties":[
         {"name":"property1", "value": "value1"},
         {"name":"property2", "value": "value2"}
@@ -120,6 +132,12 @@ example json file as below:
             {"name":"version", "value":"$[App2Version]"},
             {"name":"parameter2", "value":"value2"}
           ]
+        }
+      ],
+      "tasks":[
+        {
+          "taskType":"deployer",
+          "deployerRunType": "serial"
         }
       ],
       "properties":[
@@ -300,12 +318,17 @@ release myReleaseName, {
             }
           }
 
-          //deployer task
-          task 'Deploy', {
-            deployerRunType = 'serial'
-            projectName = myProjectName
-            subproject = myProjectName
-            taskType = 'DEPLOYER'
+          stageItem.tasks.each{ taskItem->
+            switch(taskItem.taskType){
+              case "deployer":
+                //deployer task
+                task 'Deploy', {
+                  deployerRunType = taskItem.deployerRunType?:"serial"
+                  projectName = myProjectName
+                  subproject = myProjectName
+                  taskType = 'DEPLOYER'
+                }
+            }
           }
 
           //hide the production stage from developers group
