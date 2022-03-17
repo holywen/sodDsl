@@ -66,6 +66,15 @@ example json file as below:
         {
           "taskType":"deployer",
           "deployerRunType": "serial"   # should the deployer run deploy tasks in serial or parallel mode if there are multiple applications defined
+        },
+        {
+          "taskType":"createSnapshot",    # task type for create application snapshot
+          "name":"createApp1Snapshot",    # name of the  task
+          "applicationName":"SoDApp",     # name of the application
+          "projectName":"SoD-Holy",       # project name of the application
+          "componentVersions":"ec_SoDComp-version=$[App1Version]", #component versions, has to be ec_<ComponentName>-version=<version>, use space to seperate if you have multiple components
+          "snapshotName":"$[App1Version]", #snapshot name
+          "overwrite":"true" # overwrite the snapshot if exists
         }
       ],
       "properties":[           #properties defined for stage
@@ -175,7 +184,7 @@ release myReleaseName, {
   projectName = myProjectName
 
   //set properties
-  releaseProperties.each{ propertyItem ->
+  releaseProperties?.each{ propertyItem ->
     property propertyItem.name, value: propertyItem.value
   }
 
@@ -219,7 +228,7 @@ release myReleaseName, {
     releaseName = myReleaseName
 
     //define pipeline parameters
-    pipelineParameters.each{ parameterItem ->
+    pipelineParameters?.each{ parameterItem ->
       formalParameter parameterItem.name, defaultValue: parameterItem.defaultValue, {
         expansionDeferred = '0'
         label = parameterItem.label
@@ -322,12 +331,30 @@ release myReleaseName, {
             switch(taskItem.taskType){
               case "deployer":
                 //deployer task
-                task 'Deploy', {
+                task "Deploy", {
                   deployerRunType = taskItem.deployerRunType?:"serial"
                   projectName = myProjectName
                   subproject = myProjectName
                   taskType = 'DEPLOYER'
                 }
+                break;
+              case "createSnapshot":
+                //create snapshot task
+                task taskItem.name, {
+                  subpluginKey = 'EF-Utilities'
+                  subprocedure = 'Create Snapshot'
+                  taskType = 'UTILITY'
+                  actualParameter = [
+                    'ApplicationName': taskItem.applicationName,
+                    'ComponentVersions': taskItem.componentVersions,
+                    'Overwrite': taskItem.overwrite,
+                    'ProjectName': taskItem.projectName,
+                    'SnapshotName': taskItem.snapshotName,
+                    'EnvironmentName': '',
+                    'EnvironmentProjectName':''
+                  ]
+                }
+                break;
             }
           }
 
@@ -345,7 +372,7 @@ release myReleaseName, {
             }
           }
 
-          stageItem.properties.each{ propertyItem ->
+          stageItem.properties?.each{ propertyItem ->
             property propertyItem.name, value: propertyItem.value
           }
         }
@@ -411,7 +438,7 @@ transaction {
             processName = applicationDeployConfig.deployProcessName
             snapshotName = applicationDeployConfig.snapshotName
 
-            applicationDeployConfig.parameters.each{ parameterItem ->
+            applicationDeployConfig.parameters?.each{ parameterItem ->
               actualParameter parameterItem.name, parameterItem.value
             }
           }
