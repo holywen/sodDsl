@@ -75,6 +75,13 @@ example json file as below:
           "componentVersions":"ec_SoDComp-version=$[App1Version]", #component versions, has to be ec_<ComponentName>-version=<version>, use space to seperate if you have multiple components
           "snapshotName":"$[App1Version]", #snapshot name
           "overwrite":"true" # overwrite the snapshot if exists
+        },
+        {
+          "taskType":"manual",
+          "name":"Manual Check",
+          "approvers":[
+            "Everyone"
+          ]
         }
       ],
       "properties":[           #properties defined for stage
@@ -353,6 +360,13 @@ release myReleaseName, {
                     'EnvironmentName': '',
                     'EnvironmentProjectName':''
                   ]
+                }
+                break;
+              case "manual":
+                //create manual task
+                task taskItem.name, {
+                  taskType = 'MANUAL'
+                  approver = taskItem.approvers
                 }
                 break;
             }
