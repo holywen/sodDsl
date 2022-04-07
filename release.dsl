@@ -428,7 +428,19 @@ release myReleaseName, {
 
 }
 
-
+//force clean up the deployer configuration in case the overwrite does not work
+transaction {
+  release myReleaseName, {
+    projectName = myProjectName
+    deployApplicationNames.each { applicationName ->
+      deployerApplication applicationName, {
+        myStages.each { stageItem ->
+          removeDeployerConfiguration( projectName: myProjectName, releaseName: myReleaseName, applicationName: applicationName, stageName: stageItem.stageName, deployerTaskName: "Deploy")
+        }
+      }
+    }
+  }
+}
 
 //update the deployerconfiguration for the release
 transaction {
@@ -442,6 +454,7 @@ transaction {
         stageArtifacts = myFirstAppDeployConfig.stageArtifacts ?: "0"
 
         myStages.each { stageItem ->
+          println "processing ${applicationName} Stage:" + stageItem.stageName
           def applicationDeployConfig = stageItem.applicationDeployConfigs.find { it.deployApplicationName == applicationName }
 
           deployerConfiguration "deployerconfig-" + applicationName + "-" + stageItem.stageName + "-" + applicationDeployConfig.environmentName, {
