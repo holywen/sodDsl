@@ -233,6 +233,7 @@ release myReleaseName, {
   pipeline myPipelineName, {
     projectName = myProjectName
     releaseName = myReleaseName
+    disableRestart = '1'  //not allow user restart task (to skip production approvals)
 
     //define pipeline parameters
     pipelineParameters?.each{ parameterItem ->
