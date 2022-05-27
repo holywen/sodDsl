@@ -54,6 +54,7 @@ example json file as below:
           "deployApplicationName": "SoDApp1",
           "deployProcessName": "Deploy",
           "environmentName": "SoDApp-Dev",
+          "environmentProjectName": "Holy Proj", #set the environment project name if the environment is not from the same project
           "smartDeploy":"1",
           "stageArtifacts":"1",
           "parameters":[
@@ -462,6 +463,7 @@ transaction {
             deployerTaskName = 'Deploy'
             environmentName = applicationDeployConfig.environmentName
             projectName = myProjectName
+            environmentProjectName = applicationDeployConfig.environmentProjectName
             stageName = stageItem.stageName
             processName = applicationDeployConfig.deployProcessName
             snapshotName = applicationDeployConfig.snapshotName
