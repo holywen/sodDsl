@@ -277,17 +277,19 @@ release myReleaseName, {
 
             //don't need to do resource type check if it's not a production environment
             if(stageItem.isProduction != 'true'){
-              task 'resourceCheck', {
-                gateType = 'PRE'
-                actualParameter = [
-                  'config': '/projects/sodBootstrapPipeline/pluginConfigurations/CMDB Integration',
-                  'environmentName': stageItem.applicationDeployConfigs.environmentName.unique().join(','),
-                  'isProduction': stageItem.isProduction,
-                  'projectName': myProjectName,
-                ]
-                subpluginKey = 'MGL-Utils'
-                subprocedure = 'Resource Type Check'
-                taskType = 'PLUGIN'
+              stageItem.applicationDeployConfigs.eachWithIndex { deployConfig, idx ->
+                task 'resourceCheck' + (idx==0?'':''+idx), {
+                  gateType = 'PRE'
+                  actualParameter = [
+                    'config': '/projects/sodBootstrapPipeline/pluginConfigurations/CMDB Integration',
+                    'environmentName': deployConfig.environmentName,
+                    'isProduction': stageItem.isProduction,
+                    'projectName': deployConfig.environmentProjectName?:myProjectName,
+                  ]
+                  subpluginKey = 'MGL-Utils'
+                  subprocedure = 'Resource Type Check'
+                  taskType = 'PLUGIN'
+                }
               }
             }
 
