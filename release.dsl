@@ -65,6 +65,18 @@ example json file as below:
       ],
       "tasks":[
         {
+          "taskType":"copyArtifactFromArtifactoryToCDRepo",
+          "name":"promoteArtifact",               # name of the task
+          "artifactExtension": "jar",             # the extension of the artifact to copy, can be jar, war, zip, etc.
+          "artifactClassfier": "",                # the classifier of the artifact, e.g. SNAPSHOT, can be empty if not applicable
+          "artifactName": "springboot-motofront", # the Artifact name to copy from artifactory
+          "artifactoryConf": "artifactory-1",     # the plugin configuration of EC-Artifactory which stores the credential to access artifactory repo
+          "artifactVersion": "0.1.0",             # the version of the artifact to promote
+          "orgPath": "org/springframework/test",  # the organization path of the artifact in artifactory
+          "repoKey": "libs-release-local",        # the repository key of Artifact in Artifactory, can be found in Artifactory UI
+          "resourceName": "myresource"            # the resource used to run the copyArtifactFromArtifactoryToCDRepo task
+        },
+        {
           "taskType":"deployer",
           "deployerRunType": "serial"   # should the deployer run deploy tasks in serial or parallel mode if there are multiple applications defined
         },
@@ -348,7 +360,7 @@ release myReleaseName, {
                   subproject = myProjectName
                   taskType = 'DEPLOYER'
                 }
-                break;
+                break
               case "createSnapshot":
                 //create snapshot task
                 task taskItem.name, {
@@ -365,14 +377,32 @@ release myReleaseName, {
                     'EnvironmentProjectName':''
                   ]
                 }
-                break;
+                break
+              case "copyArtifactFromArtifactoryToCDRepo":
+                // copy artifact from artifactory to cd EC-Artifact repo task
+                task taskItem.name, {
+                  actualParameter = [
+                    "artifactExtension": taskItem.artifactExtension,
+                    "artifactClassfier": taskItem.artifactClassfier,
+                    "artifactName": taskItem.artifactName,
+                    "artifactoryConf": taskItem.artifactoryConf,
+                    "artifactVersion": taskItem.artifactVersion,
+                    "orgPath": taskItem.orgPath,
+                    "repoKey": taskItem.repoKey,
+                  ]
+                  resourceName = taskItem.resourceName
+                  subprocedure = 'importArtifactFromArtifactoryToCDRepo'
+                  subproject = 'Developer Tools Sample Project'
+                  taskType = 'PROCEDURE'
+                }
+                break
               case "manual":
                 //create manual task
                 task taskItem.name, {
                   taskType = 'MANUAL'
                   approver = taskItem.approvers
                 }
-                break;
+                break
             }
           }
 
