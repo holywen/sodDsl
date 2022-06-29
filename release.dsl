@@ -74,7 +74,8 @@ example json file as below:
           "artifactVersion": "0.1.0",             # the version of the artifact to promote
           "orgPath": "org/springframework/test",  # the organization path of the artifact in artifactory
           "repoKey": "libs-release-local",        # the repository key of Artifact in Artifactory, can be found in Artifactory UI
-          "resourceName": "myresource"            # the resource used to run the copyArtifactFromArtifactoryToCDRepo task
+          "resourceName": "myresource",           # the resource used to run the copyArtifactFromArtifactoryToCDRepo task
+          "errorHandling" : "continueOnError"     # the error handling, can be continueOnError, stopOnError
         },
         {
           "taskType":"deployer",
@@ -394,6 +395,7 @@ release myReleaseName, {
                   subprocedure = 'importArtifactFromArtifactoryToCDRepo'
                   subproject = 'Developer Tools Sample Project'
                   taskType = 'PROCEDURE'
+                  errorHandling = taskItem.errorHandling?:"continueOnError"
                 }
                 break
               case "manual":
